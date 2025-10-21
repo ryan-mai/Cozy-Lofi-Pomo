@@ -14,6 +14,32 @@
     <div class="text-center pt-5 position-relative">
         <h1 class="fs-1"><div>Focus for Fall</div></h1>
         <p class="fs-5">A pomodoro time to prepare for the fall season! 🍂</p>
-</div>
+    <div id ="start-screen">
+        <button id="start-button"></button>
+    </div>
+    <div id="timer-screen">
+        <button id="stop-button"></button>
+    </div>
+    <div class="timer-div">
+        <div id="minutes-tens">0</div>
+        <div id="minutes-ones">0</div>
+        <div id="seconds-tens">0</div>
+        <div id="seconds-ones">0</div>
+    </div>
+
+    <div id="finish-screen">
+        <div><p>Take a break!</p></div>
+        <button id="finish-button">Stop Timer</button>
+    </div>
+    <audio id="finish-timer"></audio>
+    <div class="list-group d-inline-block">
+        <button type="button" class="list-group-item list-group-item-action" aria-current="true">Timer</button>
+        <button type="button" class="list-group-item list-group-item-action">To-Do</button>
+        <button type="button" class="list-group-item list-group-item-action">Notes</button>
+        <button type="button" class="list-group-item list-group-item-action">Playlist</button>
+        <button type="button" class="list-group-item list-group-item-action">Meditate</button>
+    </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
