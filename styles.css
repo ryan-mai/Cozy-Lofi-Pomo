@@ -13,3 +13,11 @@ p {
     font-family: 'Funnel Sans', 'arial', 'sans-serif';
     font-weight: 400;
 }
+
+#music-bar .progress-bar {
+    transform-origin: left center;
+    will-change: transform;
+    transition: transform 160ms linear;
+    transform: scaleX(0);
+    width: 100%;
+}

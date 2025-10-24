@@ -64,14 +64,19 @@
         <button id="add-note-btn" class="btn btn-primary mt-2">Add Note</button>
     </div>
     <div id="music-section">
-       <div id="music-container"></div>
+       <div id="music-container">
+       </div>
+            <div id="music-bar" class="progress rounded" role="progressbar" aria-label="Animated striped example" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar rounded"></div>
+            </div>
        <button id="play-music-btn" class="btn btn-primary mt-2">Play</button>
        <audio id="player" controls></audio>
+       
     </div>
     </div>
     <script src="script.js"></script>
-    <script src="../notes/notes.js"></script>
-    <script src="../todo/todo.js"></script>
-    <script src="../music/play.js"></script>
+    <script src="notes/notes.js"></script>
+    <script src="todo/todo.js"></script>
+    <script src="music/play.js"></script>
 </body>
 </html>
