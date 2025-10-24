@@ -12,7 +12,7 @@ class NotesManager {
     addNote() {
         const noteClone = this.getNoteDiv();
         this.notesContainer.append(noteClone);
-        console.log("Added note");
+        noteClone.querySelector('.note-text').focus();
     }
 
     getNoteDiv() {

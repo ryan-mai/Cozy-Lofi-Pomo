@@ -1,0 +1,4 @@
+<div class="task">
+    <textarea class="task-text" placeholder="I will code for siege!" ></textarea>
+    <button class="delete-task-btn">Delete</button>
+</div>

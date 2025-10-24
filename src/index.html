@@ -39,12 +39,33 @@
         <button type="button" class="list-group-item list-group-item-action">Playlist</button>
         <button type="button" class="list-group-item list-group-item-action">Meditate</button>
     </div>
+    <div id="todo-section">
+        <input type="text">
+        <div id="todo-container"></div>
+        <button id="add-task-btn" class="btn btn-primary mt-2">Add Task</button>
+        
+        <div id="myDIV" class="header">
+        <h2>My To Do List</h2>
+        <input type="text" id="myInput" placeholder="Title...">
+        <span onclick="newElement()" class="addBtn">Add</span>
+        </div>
+
+        <ul id="myUL">
+        <li>Hit the gym</li>
+        <li class="checked">Pay bills</li>
+        <li>Meet George</li>
+        <li>Buy eggs</li>
+        <li>Read a book</li>
+        <li>Organize office</li>
+        </ul>
+    </div>
     <div id="notes-section">
         <div id="notes-container"></div>
-        <button id="add-note-btn" class="btn btn-primary mt-2">Add Note!</button>
+        <button id="add-note-btn" class="btn btn-primary mt-2">Add Note</button>
     </div>
     </div>
     <script src="script.js"></script>
     <script src="../notes/notes.js"></script>
+    <script src="../todo/todo.js"></script>
 </body>
 </html>
