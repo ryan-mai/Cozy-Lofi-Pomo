@@ -6,33 +6,41 @@ class MusicManager {
         this.playbar = document.querySelector('#music-bar .progress-bar');
         this.index = 0;
         this._rafId = null;
-        this._progressListenersAdded = false;
+        this._progressListenersAdded = false;        
+        this.playbarContainer = document.getElementById('music-bar');
+        this.isDragging = false;
         this.init();
     }
 
     init() {
-        this.playMusicBtn.addEventListener('click', () => { this.playMusic(); });
-    
+        if (this.playMusicBtn){
+            this.playMusicBtn.addEventListener('click', () => { this.playMusic(); });
+        }
+
         if (this.player) {
             this.player.addEventListener('play', () => this.startSmoothing());
             this.player.addEventListener('pause', () => this.stopSmoothing());
             this.player.addEventListener('ended', () => this.stopSmoothing());
             
-            this.jumpTime();
+            if (this.playbarContainer) {
+                this.jumpTime();
+                this.dragTime();
+            }
         }
 
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {this.stopSmoothing();
-            console.log('hidden');}
-            else if (!this.player.paused) {this.startSmoothing(); console.log('not hidden')};
+            if (document.hidden) {
+                this.stopSmoothing();
+            }
+            else if (!this.player.paused) {
+                this.startSmoothing();
+            };
         })
     }
 
     jumpTime() {
-        const barContainer = document.getElementById('music-bar');
-        
-        barContainer.addEventListener('click', (e) => {
-            const rect = barContainer.getBoundingClientRect();
+        this.playbarContainer.addEventListener('click', (e) => {
+            const rect = this.playbarContainer.getBoundingClientRect();
             const clickPos = e.clientX - rect.left;
             const ratio = clickPos / rect.width;
 
@@ -41,9 +49,56 @@ class MusicManager {
                 this.player.currentTime = clamped * this.player.duration;
                 this.updatePlaybar();
             }
-        })
-
+        });
     }
+
+    dragTime() {
+        if (!this.playbarContainer) return;
+
+        const onMove = (e) => {
+            if (!this.isDragging) return;
+            const rect = this.playbarContainer.getBoundingClientRect();
+            const pos = e.clientX - rect.left;
+            const ratio = pos / rect.width;
+            const clamped = Math.max(0, Math.min(1, ratio));
+
+            if (this.player) {
+                this.playbar.style.transition = 'none';
+                this.playbar.style.transform = `scaleX(${clamped})`;
+                this.playbar.setAttribute('aria-valuenow', Math.round(clamped * 100));
+            }
+        };
+
+        const onUp = (e) => {
+            if (!this.isDragging) return;
+                const rect = this.playbarContainer.getBoundingClientRect();
+                const pos = e.clientX - rect.left;
+                const ratio = pos / rect.width;
+                const clamped = Math.max(0, Math.min(1, ratio));
+            
+                if (this.player && isFinite(this.player.duration)) {
+                    this.player.currentTime  = ratio * this.player.duration;
+                }
+
+                if (this.playbar) this.playbar.style.transition = '';
+
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', onUp);
+
+                if (this.player && !this.player.paused) this.startSmoothing();
+                this.updatePlaybar();
+        }
+
+        this.playbarContainer.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            this.isDragging = true;
+            this.stopSmoothing();
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+            onMove(e);
+        });
+    }
+
     async playMusic() {
         try {
             const res = await fetch('music/playlist.json');
@@ -114,7 +169,7 @@ class MusicManager {
         this.player.play().catch(err => {
             console.error(`Playback failed - Reason: ${err}`);
         });
-        this.startSmoothing();
+        if (!isDragging) this.startSmoothing();
     }
 }
 
