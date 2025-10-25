@@ -17,9 +17,33 @@ class MusicManager {
             this.player.addEventListener('play', () => this.startSmoothing());
             this.player.addEventListener('pause', () => this.stopSmoothing());
             this.player.addEventListener('ended', () => this.stopSmoothing());
+            
+            this.jumpTime();
         }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {this.stopSmoothing();
+            console.log('hidden');}
+            else if (!this.player.paused) {this.startSmoothing(); console.log('not hidden')};
+        })
     }
 
+    jumpTime() {
+        const barContainer = document.getElementById('music-bar');
+        
+        barContainer.addEventListener('click', (e) => {
+            const rect = barContainer.getBoundingClientRect();
+            const clickPos = e.clientX - rect.left;
+            const ratio = clickPos / rect.width;
+
+            const clamped = Math.max(0, Math.min(1, ratio));
+            if (this.player && isFinite(this.player.duration)) {
+                this.player.currentTime = clamped * this.player.duration;
+                this.updatePlaybar();
+            }
+        })
+
+    }
     async playMusic() {
         try {
             const res = await fetch('music/playlist.json');
