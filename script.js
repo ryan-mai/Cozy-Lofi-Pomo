@@ -35,11 +35,14 @@ class PomodoroTimer{
             this.playBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (!this.isRunning) {
-                    if (this.selectedTime !== null || this.selectedTime !== undefined) {
-                        this.startTimer();
-                        this.playIcon.classList.add('filled');
-                        this.playIcon.textContent = 'square_circle';
+                    if (this.timeLeft <=0 && (this.selectedTime !== null || this.selectedTime !== undefined)) {
+                        this.timeLeft = this.selectedTime * 60;
                     }
+
+                    this.startTimer();
+                    this.playIcon.classList.add('filled');
+                    this.playIcon.textContent = 'square_circle';
+
                 } else {
                     this.stopTimer();
                     this.playIcon.classList.remove('filled');
@@ -56,17 +59,18 @@ class PomodoroTimer{
             });
         }
         
-
-        this.finishBtn.addEventListener('click', () => {
-            this.finishTimer.pause();
-            this.finishTimer = null;
-            this.finishScreen?.classList.add('hidden');
-            this.startScreen?.classList.remove('hidden');
-        });
+        if (this.finishBtn) {
+            this.finishBtn.addEventListener('click', () => {
+                this.finishTimer.pause();
+                this.finishTimer = null;
+                this.finishScreen?.classList.add('hidden');
+                this.startScreen?.classList.remove('hidden');
+            });
+        }
 
         if (this.closeBtn) {
             this.closeBtn.addEventListener('click', () => {
-                this.stopTimer();
+                this.stopTimer(true);
                 this.timerWrap?.classList.add('hidden');
             });
         }
@@ -74,7 +78,10 @@ class PomodoroTimer{
     }
 
     startTimer() {
-        this.timeLeft = this.selectedTime * 60;
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        
+        if (this.timeLeft <= 0) this.timeLeft = this.selectedTime * 60;
+
         this.isRunning = true;
         this.timerContainer?.classList.add('expanded');
 
@@ -91,21 +98,39 @@ class PomodoroTimer{
         }, 1000);
     }
 
-    stopTimer() {
+    stopTimer(force = false) {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+
         this.isRunning = false;
         this.timerContainer?.classList.remove('expanded');
 
-        if (this.timerText) this.timerText.textContent = this.formatHMS(this.selectedTime * 60);
-        if (this.playIcon) {
-            this.playIcon.classList.remove('filled');
-            this.playIcon.textContent = 'play_circle';
+        if (force) {
+            this.timeLeft = 0;
+
+            if (this.timerText) this.timerText.textContent = this.formatHMS(this.selectedTime * 60);
+            
+            if (this.playIcon) {
+                this.playIcon.classList.remove('filled');
+                this.playIcon.textContent = 'play_circle';
+            }
+            return;
         }
+        if (this.timerText) {
+            this.timerText.textContent = this.formatHMS(this.timeLeft > 0 ? this.timeLeft : this.selectedTime * 60)
+        };
     }
 
     timerFinished() {
-        clearInterval(this.timerInterval);
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
+
         this.isRunning = false;
         this.timerContainer?.classList.remove('expanded');
+        
         if (this.playIcon) {
             this.playIcon.classList.remove('filled');
             this.playIcon.textContent = 'play_circle';
@@ -123,13 +148,13 @@ class PomodoroTimer{
     }
 
     dragTimer() {
-        if (!this.timerContainer) return;
+        if (!this.timerWrap) return;
 
-        const computed = getComputedStyle(this.timerContainer);
+        const computed = getComputedStyle(this.timerWrap);
         if (computed.position === 'static') {
-            this.timerContainer.style.position = 'absolute';
-            this.timerContainer.style.left = this.timerContainer.offsetLeft + 'px';
-            this.timerContainer.style.top = this.timerContainer.offsetTop + 'px'
+            this.timerWrap.style.position = 'absolute';
+            this.timerWrap.style.left = this.timerWrap.offsetLeft + 'px';
+            this.timerWrap.style.top = this.timerWrap.offsetTop + 'px'
         }
 
         this.timerContainer.style.touchAction = 'none';
