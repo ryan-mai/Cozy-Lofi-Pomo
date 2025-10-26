@@ -102,7 +102,17 @@ class MusicManager {
     async playMusic() {
         try {
             const res = await fetch('music/playlist.json');
-            this.playlist = await res.json();
+            if (!res.ok) {
+                console.error('Failed to fetch player:', res.status);
+                return;
+            }
+            const body = await res.text();
+            try {
+                this.playlist = JSON.parse(body);
+            } catch(err) {
+                console.error('Invalid JSON format:', err);
+                return;
+            }
 
             if (!this.player || !Array.isArray(this.playlist)) return;
         
@@ -121,7 +131,7 @@ class MusicManager {
         }
         
         catch(err) {
-            console.error("Failed to load playlist...");
+            console.error("Failed to load playlist:", err);
         }
     }
 
@@ -169,7 +179,7 @@ class MusicManager {
         this.player.play().catch(err => {
             console.error(`Playback failed - Reason: ${err}`);
         });
-        if (!isDragging) this.startSmoothing();
+        if (!this.isDragging) this.startSmoothing();
     }
 }
 

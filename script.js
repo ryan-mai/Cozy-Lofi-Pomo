@@ -13,10 +13,22 @@ class PomodoroTimer{
         this.finishBtn = document.getElementById('finish-button')
         this.finishTimer = document.getElementById('finish-timer');
 
-        this.initTimer();
+        this.playIcon = document.querySelector('#play-button .material-symbols-outlined');
+        this.stopIcon = document.querySelector('#stop-button .material-symbols-outlined');
+        this.init();
     }
 
-    initTimer() {
+
+    init() {
+        this.playIcon.addEventListener('click', (e) => {
+            this.playIcon.classList.toggle('filled');
+            e.stopPropagation();
+        });
+
+        this.stopIcon.addEventListener('click', (e) => {
+            this.stopIcon.classList.toggle('filled');
+            e.stopPropagation();
+        })
         this.startBtn.addEventListener('click', () => {
             if (this.selectedTime !== null || this.selectedTime !== undefined) {
                 this.startTimer();
@@ -95,5 +107,5 @@ class PomodoroTimer{
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const timer = new PomodoroTimer();
+    new PomodoroTimer();
 })
