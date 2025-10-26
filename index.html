@@ -20,29 +20,25 @@
         <button id="start-button"></button>
     </div>
 
-    <div id="timer-screen" class="card" style="width: 24rem;">
-    <div class="card-body">
-        <div class="ms-3 d-flex align-items-center justify-content-between">
-        <h5 class="card-title">Timer</h5>
+<div id="timer-screen" class="card" style="width: 24rem;">
+    <div class="card-header d-flex align-items-center justify-content-between rounded">
+        <h5 class="mb-0">Timer</h5>
         <button type="button" class="btn-close" aria-label="Close"></button>
-        </div>
-        <p class="card-text">Set one to study or to bake a sweet pie!</p>
-        <a href="#" class="btn btn-primary rounded">Start</a>
-        <div style="font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 48;">
-        <button id="play-button" type="button">
-            <span class="material-symbols-outlined toggle-fill">play_circle</span>
-        </button>
-        <button id="stop-button" type="button">
-            <span class="material-symbols-outlined toggle-fill">
-            square_circle
-            </span>
-        </button>
-        </div>
-
-
 
     </div>
+    <div class="card-body position-relative text-start">
+        <h5 class="card-text">Study, bake, or nap timer?</h5>
+            <div style="font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 48;">
+                <button id="play-button" type="button">
+                    <span class="material-symbols-outlined toggle-fill">play_circle</span>
+                </button>
+                <button id="stop-button" type="button">
+                    <span class="material-symbols-outlined toggle-fill">square_circle</span>
+                </button>
+            </div>
     </div>
+</div>
+
     <div class="timer-div">
         <div id="minutes-tens">0</div>
         <div id="minutes-ones">0</div>
@@ -93,7 +89,7 @@
             <div class="progress-bar rounded"></div>
             </div>
        <button id="play-music-btn" class="btn btn-primary mt-2">Play</button>
-       <audio id="player" controls></audio>
+       <audio style="opacity: 0;" id="player" controls></audio>
        
     </div>
     </div>

@@ -120,36 +120,63 @@ class PomodoroTimer{
             this.timerContainer.style.top = this.timerContainer.offsetTop + 'px'
         }
 
+        this.timerContainer.style.touchAction = 'none';
+
         let offsetX = 0;
         let offsetY = 0;
 
         const onMove = (e) => {
             if (!this.isDragging) return;
-            const left = e.clientX - offsetX;
-            const top = e.clientY - offsetY;
 
-            const maxLeft = window.innerWidth - this.timerContainer.offsetWidth;
-            const maxTop = window.innerWidth - this.timerContainer.offsetHeight;
+            const parent = this.timerContainer.offsetParent || document.documentElement;
+            const parentRect = parent.getBoundingClientRect();
 
-            this.timerContainer.style.left = Math.min(Math.max(0, left), Math.max(0, maxLeft)) + 'px';
-            this.timerContainer.style.top = Math.min(Math.max(0, top), Math.max(0, maxTop)) + 'px';
+            const left = e.clientX - parentRect.left - offsetX;
+            const top = e.clientY - parentRect.top - offsetY;
+
+            const parentWidth  = parent === document.documentElement ? window.innerWidth  : parent.clientWidth;
+            const parentHeight = parent === document.documentElement ? window.innerHeight : parent.clientHeight;
+
+            const maxLeft = Math.max(0, parentWidth  - this.timerContainer.offsetWidth);
+            const maxTop  = Math.max(0, parentHeight - this.timerContainer.offsetHeight);
+
+            this.timerContainer.style.left = Math.min(Math.max(0, left), maxLeft) + 'px';
+            this.timerContainer.style.top  = Math.min(Math.max(0, top),  maxTop)  + 'px';
+
+            console.log(offsetX, offsetY, e.clientX, e.clientY)
+
+            e.preventDefault();
         };
 
-        const onUp = () => {
+        const onUp = (e) => {
             this.isDragging = false;
+            try { 
+                e.currentTarget?.releasePointerCapture?.(e.pointerId);
+            }
+            catch (err) {
+                console.error(err)
+            }
             document.removeEventListener('pointermove', onMove);
             document.removeEventListener('pointerup', onUp);
-        }
+        };
 
         this.timerContainer.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
+            if (e.button !== 0) return;
+            if (e.target.closest('button, a, input, textarea, label')) return;
+
             this.isDragging = true;
 
             const rect = this.timerContainer.getBoundingClientRect();
             offsetX = e.clientX - rect.left;
             offsetY = e.clientY - rect.top;
 
-            document.addEventListener('pointermove', onMove);
+            try {
+                e.currentTarget.setPointerCapture(e.pointerId)
+            } catch (err) {
+                console.error(err);
+            }
+
+            document.addEventListener('pointermove', onMove, { passive: false });
             document.addEventListener('pointerup', onUp);
         });
     }
