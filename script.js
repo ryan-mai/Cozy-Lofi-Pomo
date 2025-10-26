@@ -5,6 +5,7 @@ class PomodoroTimer{
         this.timerInterval = null;
         this.isRunning = false;
 
+        this.timerWrap = document.getElementById('timer-wrap');
         this.timerContainer = document.getElementById('timer-screen');
 
         this.startScreen = document.getElementById('start-screen');
@@ -14,9 +15,11 @@ class PomodoroTimer{
         this.finishBtn = document.getElementById('finish-button')
         this.finishTimer = document.getElementById('finish-timer');
 
-        this.playIcon = document.querySelector('#play-button .material-symbols-outlined');
+        this.playBtn = document.getElementById('play-button');
+        this.playIcon = this.playBtn?.querySelector('.material-symbols-outlined');
         this.stopIcon = document.querySelector('#stop-button .material-symbols-outlined');
-
+        this.timerText = document.getElementById('timer-text');
+        this.closeBtn = document.getElementById('timer-close');
         this.isDragging = false;
 
         this.init();
@@ -24,52 +27,63 @@ class PomodoroTimer{
 
 
     init() {
-        this.playIcon.addEventListener('click', (e) => {
-            this.playIcon.classList.toggle('filled');
-            e.stopPropagation();
-        });
+        if (this.timerText) {
+            this.timerText.textContent = this.formatHMS(this.selectedTime * 60);
+        }
 
-        this.stopIcon.addEventListener('click', (e) => {
-            this.stopIcon.classList.toggle('filled');
-            e.stopPropagation();
-        })
-        this.startBtn.addEventListener('click', () => {
-            if (this.selectedTime !== null || this.selectedTime !== undefined) {
-                this.startTimer();
-            }
-        });
+        if (this.playBtn && this.playIcon) {
+            this.playBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!this.isRunning) {
+                    if (this.selectedTime !== null || this.selectedTime !== undefined) {
+                        this.startTimer();
+                        this.playIcon.classList.add('filled');
+                        this.playIcon.textContent = 'square_circle';
+                    }
+                } else {
+                    this.stopTimer();
+                    this.playIcon.classList.remove('filled');
+                    this.playIcon.textContent = 'play_circle';
+                }
+            });
+        }
 
-        this.stopBtn.addEventListener('click', () => {
-            if (!this.isRunning && this.timeLeft === 0) return;
-            this.stopTimer();
-        });
+        if (this.stopIcon) {
+            this.stopIcon.addEventListener('click', (e) => {
+                if (!this.isRunning && this.timeLeft === 0) return;
+                e.stopPropagation();
+                if (this.isRunning) this.stopTimer();
+            });
+        }
+        
 
         this.finishBtn.addEventListener('click', () => {
             this.finishTimer.pause();
             this.finishTimer = null;
-            this.finishScreen.classList.add('hidden');
-            this.startScreen.classList.remove('hidden');
+            this.finishScreen?.classList.add('hidden');
+            this.startScreen?.classList.remove('hidden');
         });
 
+        if (this.closeBtn) {
+            this.closeBtn.addEventListener('click', () => {
+                this.stopTimer();
+                this.timerWrap?.classList.add('hidden');
+            });
+        }
         this.dragTimer();
     }
 
     startTimer() {
-        this.timeLeft = this.selectedTime * 60.0;
-        this.startScreen.classList.add('hidden');
-        this.finishScreen.classList.remove('hidden');
-
+        this.timeLeft = this.selectedTime * 60;
         this.isRunning = true;
+        this.timerContainer?.classList.add('expanded');
 
-        const initialMinute = this.selectedTime;
-        document.getElementById('minutes-tens').textContent = Math.floor(initialMinute / 60);
-        document.getElementById('minutes-ones').textContent = initialMinute % 60;
-        document.getElementById('seconds-tens').textContent = '0';
-        document.getElementById('seconds-ones').textContent = '0';
+        if (this.timerText) this.timerText.textContent = this.formatHMS(this.timeLeft);
     
         this.timerInterval = setInterval(() => {
             this.timeLeft--;
-            this.updateTimer();
+            
+            if (this.timerText) this.timerText.textContent = this.formatHMS(this.timeLeft);
 
             if (this.timeLeft <= 0) {
                 this.timerFinished();
@@ -78,36 +92,34 @@ class PomodoroTimer{
     }
 
     stopTimer() {
-        clearInterval(this.timerInterval);
-        this.timerInterval = null;
-        this.selectedTime = null;
+        this.isRunning = false;
+        this.timerContainer?.classList.remove('expanded');
 
-        this.timerContainer.classList.add('hidden');
-        this.finishScreen.add('hidden');
-        this.startScreen.classList.remove('hidden');
-
-        document.getElementById('minutes-tens').textContent = '0';
-        document.getElementById('minutes-ones').textContent = '0';
-        document.getElementById('seconds-tens').textContent = '0';
-        document.getElementById('seconds-ones').textContent = '0';
-    }
-
-    updateTimer() {
-        const minutes = Math.floor(this.timeLeft / 60);
-        const seconds = this.timeLeft % 60;
-
-        document.getElementById('minutes-tens').textContent = Math.floor(minutes / 10);
-        document.getElementById('minutes-ones').textContent = minutes % 10;
-        document.getElementById('seconds-tens').textContent = Math.floor(seconds / 10);
-        document.getElementById('seconds-ones').textContent = seconds % 10;
+        if (this.timerText) this.timerText.textContent = this.formatHMS(this.selectedTime * 60);
+        if (this.playIcon) {
+            this.playIcon.classList.remove('filled');
+            this.playIcon.textContent = 'play_circle';
+        }
     }
 
     timerFinished() {
-        this.timerContainer.classList.add('hidden');
-        this.finishScreen.classList.remove('hidden');
         clearInterval(this.timerInterval);
-
         this.isRunning = false;
+        this.timerContainer?.classList.remove('expanded');
+        if (this.playIcon) {
+            this.playIcon.classList.remove('filled');
+            this.playIcon.textContent = 'play_circle';
+        }
+    }
+
+    formatHMS(total) {
+        const h = Math.floor(total / 3600);
+        const m = Math.floor((total % 3600) / 60);
+        const s = Math.max(0, total % 60);
+        const hh = String(h).padStart(2, '0');
+        const mm = String(m).padStart(2, '0');
+        const ss = String(s).padStart(2, '0');
+        return `${hh}:${mm}:${ss}`;
     }
 
     dragTimer() {

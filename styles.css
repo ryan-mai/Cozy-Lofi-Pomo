@@ -14,8 +14,72 @@ p {
     font-weight: 400;
 }
 
-#play-button,
-#stop-button {
+.hidden {
+    display: none !important;
+}
+
+.timer-wrap {
+    width: 24rem;
+    height: 8rem;
+    position: relative;
+    /* margin: 0 auto; */
+}
+
+#timer-screen.timer-pill {
+    position: absolute;
+    top: 1.25rem;
+    left: 0;
+    height: 3rem;
+    width: 10rem;
+    padding-inline: 0.75rem;
+    transition: width 180ms ease, box-shadow 180ms ease, transform 120ms ease;
+}
+
+.timer-wrap:hover #timer-screen,
+#timer-screen.expanded {
+    width: 20rem;
+}
+
+.timer-wrap:hover .timer-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.timer-close-btn:hover {
+    transform: translate(0, 0) scale(1.07);
+}
+
+#timer-text {
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.timer-close-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    border: none;
+    background-color: 2px solid rgb(255, 255, 255);
+    color: #FF383C;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+    cursor: pointer;
+    transform-origin: center;
+    transform: translate(0, 0) scale(1);
+    z-index: 2;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 140ms ease, transform 120ms ease, background 140ms ease, color 140ms ease;
+}
+
+
+#play-button {
+    width: 56px;
+    height: 56px;
     background: transparent;
     border: none;
     padding: 0;
@@ -27,8 +91,20 @@ p {
     justify-content: center;
     cursor: pointer;
     color: inherit;
+    transform: scale(1);
 }
 
+#play-button .material-symbols-outlined {
+    font-size: 32px;
+    color: #ffffff;
+    transition: color 120ms ease, font-variation-settings 120ms ease, transform 120ms ease;
+}
+
+#play-button:hover .material-symbols-outlined {
+    color: #ffefd6;
+    outline: none;
+    transform: translate(0, 0) scale(1.07);
+}
 
 #timer-screen,
 #timer-screen * {
