@@ -5,9 +5,10 @@ class PomodoroTimer{
         this.timerInterval = null;
         this.isRunning = false;
 
+        this.timerContainer = document.getElementById('timer-screen');
+
         this.startScreen = document.getElementById('start-screen');
         this.startBtn = document.getElementById('start-button');
-        this.timerScreen = document.getElementById('timer-screen');
         this.stopBtn = document.getElementById('stop-button');
         this.finishScreen = document.getElementById('finish-screen');
         this.finishBtn = document.getElementById('finish-button')
@@ -15,6 +16,9 @@ class PomodoroTimer{
 
         this.playIcon = document.querySelector('#play-button .material-symbols-outlined');
         this.stopIcon = document.querySelector('#stop-button .material-symbols-outlined');
+
+        this.isDragging = false;
+
         this.init();
     }
 
@@ -46,6 +50,8 @@ class PomodoroTimer{
             this.finishScreen.classList.add('hidden');
             this.startScreen.classList.remove('hidden');
         });
+
+        this.dragTimer();
     }
 
     startTimer() {
@@ -76,8 +82,7 @@ class PomodoroTimer{
         this.timerInterval = null;
         this.selectedTime = null;
 
-        if (!this.finishScreen.classList.contains('hidden')) return;
-        this.timerScreen.classList.add('hidden');
+        this.timerContainer.classList.add('hidden');
         this.finishScreen.add('hidden');
         this.startScreen.classList.remove('hidden');
 
@@ -98,11 +103,55 @@ class PomodoroTimer{
     }
 
     timerFinished() {
-        this.timerScreen.classList.add('hidden');
+        this.timerContainer.classList.add('hidden');
         this.finishScreen.classList.remove('hidden');
         clearInterval(this.timerInterval);
 
         this.isRunning = false;
+    }
+
+    dragTimer() {
+        if (!this.timerContainer) return;
+
+        const computed = getComputedStyle(this.timerContainer);
+        if (computed.position === 'static') {
+            this.timerContainer.style.position = 'absolute';
+            this.timerContainer.style.left = this.timerContainer.offsetLeft + 'px';
+            this.timerContainer.style.top = this.timerContainer.offsetTop + 'px'
+        }
+
+        let offsetX = 0;
+        let offsetY = 0;
+
+        const onMove = (e) => {
+            if (!this.isDragging) return;
+            const left = e.clientX - offsetX;
+            const top = e.clientY - offsetY;
+
+            const maxLeft = window.innerWidth - this.timerContainer.offsetWidth;
+            const maxTop = window.innerWidth - this.timerContainer.offsetHeight;
+
+            this.timerContainer.style.left = Math.min(Math.max(0, left), Math.max(0, maxLeft)) + 'px';
+            this.timerContainer.style.top = Math.min(Math.max(0, top), Math.max(0, maxTop)) + 'px';
+        };
+
+        const onUp = () => {
+            this.isDragging = false;
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+        }
+
+        this.timerContainer.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            this.isDragging = true;
+
+            const rect = this.timerContainer.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+        });
     }
 }
 
