@@ -5,6 +5,8 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
     min-height: 100vh;
+    background-color: rgba(255, 255, 255, 0.2);
+    background-blend-mode: lighten;
 }
 h1 {
     font-family: 'Abril Fatface', 'arial', 'sans-serif';
@@ -24,7 +26,7 @@ p {
     width: 24rem;
     height: 8rem;
     position: relative;
-    /* margin: 0 auto; */
+    margin: 0 auto;
 }
 
 #timer-screen.timer-pill {

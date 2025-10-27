@@ -128,15 +128,12 @@ class MusicManager {
     dragMusic() {
         if (!this.musicWrap || !this.musicContainer) return;
 
-        const computed = getComputedStyle(this.musicWrap);
-        if (computed.position === 'static') {
-            this.musicWrap.style.position = 'absolute';
-            this.musicWrap.style.left = this.musicWrap.offsetLeft + 'px';
-            this.musicWrap.style.top = this.musicWrap.offsetTop + 'px'
-        }
+        this.musicWrap.style.position = 'absolute';
+        this.musicWrap.style.left = this.musicWrap.offsetLeft + 'px';
+        this.musicWrap.style.top = this.musicWrap.offsetTop + 'px'
 
         this.musicContainer.style.touchAction = 'none';
-
+        
         let isDragging = false;
         let offsetX = 0;
         let offsetY = 0;
@@ -144,7 +141,7 @@ class MusicManager {
         const onMove = (e) => {
             if (!isDragging) return;
 
-            const parent = this.musicContainer.offsetParent || document.documentElement;
+            const parent = this.musicWrap.offsetParent || document.documentElement;
             const parentRect = parent.getBoundingClientRect();
 
             const left = e.clientX - parentRect.left - offsetX;
@@ -182,7 +179,7 @@ class MusicManager {
 
             isDragging = true;
 
-            const rect = this.musicContainer.getBoundingClientRect();
+            const rect = this.musicWrap.getBoundingClientRect();
             offsetX = e.clientX - rect.left;
             offsetY = e.clientY - rect.top;
 
@@ -351,12 +348,12 @@ class MusicManager {
         if (!this.musicText) return;
         try {
             const raw = decodeURIComponent(url.split('/').pop() || url);
-            const name = raw.replace(/\.(mp3)$/i, '');
+            const name = raw.replace(/\.(mp3)$/i, '').replace(/[_\-]+/g, ' ');
             this.musicText.setAttribute('data-text', name);
-            this.musicText.textContent = name;
+            this.musicText.textContent = '';
         } catch {
             this.musicText.setAttribute('data-text', 'Now Playing');
-            this.musicText.textContent = 'Now Playing';
+            this.musicText.textContent = '';
         }
     }
 
