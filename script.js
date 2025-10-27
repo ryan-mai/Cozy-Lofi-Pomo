@@ -29,6 +29,17 @@ class PomodoroTimer{
     init() {
         if (this.timerText) {
             this.timerText.textContent = this.formatHMS(this.selectedTime * 60);
+            this.timerText.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                this.timeEditor();
+            });
+        }
+
+        if (this.timerContainer) {
+            this.timerContainer.addEventListener('dblclick', (e) => {
+                if (e.target.closest('button', 'a', 'input', 'textarea', 'label')) return;
+                this.timeEditor();
+            })
         }
 
         if (this.playBtn && this.playIcon) {
@@ -70,11 +81,82 @@ class PomodoroTimer{
 
         if (this.closeBtn) {
             this.closeBtn.addEventListener('click', () => {
-                this.stopTimer(true);
-                this.timerWrap?.classList.add('hidden');
+                this.timeLeft = this.selectedTime * 60;
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                }
+                this.isRunning = false;
+                this.startTimer();
+                if (this.playIcon) {
+                    this.playIcon.classList.add('filled');
+                    this.playIcon.textContent = 'square_circle';
+                }
             });
         }
         this.dragTimer();
+    }
+
+    timeEditor() {
+        if (!this.timerText) return;
+        this.timerContainer?.classList.add('expanded');
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'timer-text-input';
+        input.value = this.timerText.textContent?.trim() || this.formatHMS(this.selectedTime * 60);
+
+        this.timerText.style.display = 'none';
+        this.timerText.parentElement?.insertBefore(input, this.timerText.nextSibling);
+        input.focus();
+        input.select();
+
+        const add = () => {
+            const text = this.getInput(input.value.trim());
+            input.remove();
+            this.timerText.style.display = '';
+            if (text !== null) {
+                this.timeLeft = text;
+                this.selectedTime = Math.floor(text / 60);
+                this.timerText.textContent = this.formatHMS(this.timeLeft);
+            } else {
+                this.timerText.textContent = this.formatHMS(this.timeLeft > 0 ? this.timeLeft : this.selectedTime * 60);
+            }
+        };
+
+        const cancel = () => {
+            input.remove();
+            this.timerText.style.display = '';
+        };
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                add();
+            } else if (e.key === 'Escape') {
+                cancel();
+            }
+        });
+        input.addEventListener('blur', () => add());
+    }
+
+    getInput(text) {
+        if (!text) return null;
+        if (/^\d+$/.test(text)) return parseInt(text, 10) * 60;
+        const parts = text.split(':').map(s => s.trim());
+        if (parts.length === 2 && /^\d+$/.test(parts[0]) && /^\d{1,2}$/.test(parts[1])) {
+            const m = parseInt(parts[0], 10);
+            const s = parseInt(parts[1], 10);
+            if (s >= 60) return null;
+            return m * 60 + s;
+        }
+        if (parts.length === 3 && parts.every(p => /^\d+$/.test(p))) {
+            const h = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10);
+            const s = parseInt(parts[2], 10);
+            if (m >= 60 || s >= 60) return null;
+            return h * 3600 + m * 60 + s;
+        }
+        return null;
     }
 
     startTimer() {
@@ -85,7 +167,9 @@ class PomodoroTimer{
         this.isRunning = true;
         this.timerContainer?.classList.add('expanded');
 
-        if (this.timerText) this.timerText.textContent = this.formatHMS(this.timeLeft);
+        if (this.timerText) {
+            this.timerText.textContent = this.formatHMS(this.timeLeft);
+        };
     
         this.timerInterval = setInterval(() => {
             this.timeLeft--;
