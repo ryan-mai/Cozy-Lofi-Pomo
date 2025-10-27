@@ -9,6 +9,17 @@ class MusicManager {
         this._progressListenersAdded = false;        
         this.playbarContainer = document.getElementById('music-bar');
         this.isDragging = false;
+
+        this.musicWrap = document.getElementById('music-wrap');
+        this.musicContainer = document.getElementById('music-screen');
+        this.musicButton = document.getElementById('music-button');
+        this.musicIcon = this.musicButton?.querySelector('.material-symbols-outlined');
+        this.musicText = document.getElementById('music-text');
+        this.musicClose = document.getElementById('music-close');
+        this.barToggle = document.getElementById('music-bar-toggle');
+        this.barIcon = this.barToggle?.querySelector('.material-symbols-outlined');
+        this.timeText = document.getElementById('music-time');
+        this
         this.init();
     }
 

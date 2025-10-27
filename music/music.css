@@ -1,0 +1,282 @@
+.hidden {
+    display: none !important;
+}
+
+.music-wrap {
+    width: 24rem;
+    height: 8rem;
+    position: relative;
+    margin: 0 auto;
+}
+
+#music-screen.music-pill {
+    position: absolute;
+    top: 1.25rem;
+    left: 0;
+    height: 3rem;
+    width: 10rem;
+    padding-inline: 0.75rem;
+    transition: width 180ms ease, box-shadow 180ms ease, transform 120ms ease;
+    z-index: 2;
+}
+
+.music-wrap:hover #play-button,
+#music-screen.expanded #play-button {
+    margin: 0 auto;
+}
+
+.music-wrap:hover #music-screen,
+#music-screen.expanded {
+    width: 15rem;
+}
+
+.music-wrap:hover #music-text,
+#music-screen.expanded #music-text {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+}
+
+#music-text::after {
+    content: attr(data-text);
+}
+
+#music-text {
+    animation: scroll-right 12s linear infinite;
+    will-change: transform;
+}
+
+@keyframes scroll-right {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.music-wrap:hover .music-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.music-close-btn:hover {
+    transform: translate(0, 0) scale(1.07);
+}
+
+#music-text {
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s linear 120ms, opacity 120ms ease;
+    overflow: hidden;
+    max-width: 9rem;
+    display: inline-block;
+    user-select: none;
+    pointer-events: none;
+}
+
+.music-close-btn {
+    position: absolute;
+    top: -1.0rem;
+    right: -0.5rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    border: 2px solid rgba(255,255,255,0.95);
+    background: rgba(255, 255, 255, 0.95);
+    color: #FF383C;
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    transform-origin: center;
+    transform: translate(0, 0) scale(1);
+    z-index: 3;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 140ms ease, transform 120ms ease, background 140ms ease, color 140ms ease;
+}
+
+.music-wrap:hover .music-close-btn,
+#music-screen.expanded + .music-close-btn,
+#music-screen.expanded .music-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#music-screen.expanded .music-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+#music-screen.expanded + .music-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#play-button {
+    width: 56px;
+    height: 56px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: -4.5rem;
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: inherit;
+    transform: scale(1);
+}
+
+#play-button .material-symbols-outlined {
+    font-size: 32px;
+    color: #ffffff;
+    transition: color 120ms ease, font-variation-settings 120ms ease, transform 120ms ease;
+}
+
+#play-button:hover .material-symbols-outlined {
+    color: #ffefd6;
+    outline: none;
+    transform: translate(0, 0) scale(1.07);
+}
+
+#music-screen,
+#music-screen * {
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+#music-screen button,
+#music-screen a {
+    user-select: none;
+}
+
+.music-text-input {
+    min-width: 6.5rem;
+    max-width: 10rem;
+    padding: 2px 6px;
+    border-radius: 999px;
+    border: none;
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+}
+
+.music-text-input:focus {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+#music-bar .progress-bar {
+    transform-origin: left center;
+    will-change: transform;
+    transition: transform 160ms linear;
+    transform: scaleX(0);
+    width: 100%;
+}
+
+#music-button {
+    width: 56px;
+    height: 56px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: -4.5rem;
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: inherit;
+    transform: scale(1);
+}
+#music-button .material-symbols-outlined {
+    font-size: 32px;
+    color: #ffffff;
+    transition: color 120ms ease, font-variation-settings 120ms ease, transform 120ms ease;
+}
+#music-button:hover .material-symbols-outlined {
+    color: #ffefd6;
+    outline: none;
+    transform: translate(0, 0) scale(1.07);
+}
+
+.music-wrap:hover #music-button,
+#music-screen.expanded #music-button {
+    margin: 0 auto;
+}
+
+#music-screen,
+#music-screen * {
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.music-controls {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.75rem;
+    width: min(520px, 90%);
+    margin-inline: auto;
+    margin-top: 0.5rem;
+}
+#music-bar {
+    height: 10px;
+    width: 100%;
+    margin: 0 auto;
+}
+#music-bar .progress-bar {
+    transform-origin: left center;
+    will-change: transform;
+    transition: transform 160ms linear;
+    transform: scaleX(0);
+    width: 100%;
+}
+.music-time {
+    position: absolute;
+    right: 0;
+    bottom: -1.25rem;
+    font-size: 0.75rem;
+    color: #fff;
+    opacity: 0.85;
+    user-select: none;
+}
+
+.music-bar-btn {
+    background: transparent;
+    border: none;
+    color: #0d6efd;
+    width: 40px;
+    height: 40px;
+    display: inline-grid;
+    place-items: center;
+    cursor: pointer;
+}
+.music-bar-btn .material-symbols-outlined {
+    font-size: 28px;
+}
+
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 48px;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+    -webkit-font-smoothing: antialiased;
+
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+
+    transition: font-variation-settings 180ms linear, color 180ms linear;
+}
+
+.material-symbols-outlined.filled {
+    font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+}

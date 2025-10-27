@@ -1,3 +1,5 @@
+@import "music/music.css";
+
 body {
     background-image: url('../assets/fall_background.jpg');
     background-size: cover;
@@ -38,7 +40,7 @@ p {
 
 .timer-wrap:hover #play-button,
 #timer-screen.expanded #play-button {
-    margin: auto;
+    margin: 0 auto;
 }
 
 .timer-wrap:hover #timer-screen,
