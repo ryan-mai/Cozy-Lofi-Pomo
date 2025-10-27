@@ -100,7 +100,7 @@ class PomodoroTimer{
     timeEditor() {
         if (!this.timerText) return;
         this.timerContainer?.classList.add('expanded');
-        
+
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'timer-text-input';
@@ -234,12 +234,9 @@ class PomodoroTimer{
     dragTimer() {
         if (!this.timerWrap) return;
 
-        const computed = getComputedStyle(this.timerWrap);
-        if (computed.position === 'static') {
-            this.timerWrap.style.position = 'absolute';
-            this.timerWrap.style.left = this.timerWrap.offsetLeft + 'px';
-            this.timerWrap.style.top = this.timerWrap.offsetTop + 'px'
-        }
+        this.timerWrap.style.position = 'absolute';
+        this.timerWrap.style.left = (this.timerWrap.offsetLeft || 0) + 'px';
+        this.timerWrap.style.top = (this.timerWrap.offsetTop || 0) + 'px';
 
         this.timerContainer.style.touchAction = 'none';
 
@@ -249,7 +246,7 @@ class PomodoroTimer{
         const onMove = (e) => {
             if (!this.isDragging) return;
 
-            const parent = this.timerContainer.offsetParent || document.documentElement;
+            const parent = this.timerWrap.offsetParent || document.documentElement;
             const parentRect = parent.getBoundingClientRect();
 
             const left = e.clientX - parentRect.left - offsetX;
@@ -258,13 +255,11 @@ class PomodoroTimer{
             const parentWidth  = parent === document.documentElement ? window.innerWidth  : parent.clientWidth;
             const parentHeight = parent === document.documentElement ? window.innerHeight : parent.clientHeight;
 
-            const maxLeft = Math.max(0, parentWidth  - this.timerContainer.offsetWidth);
-            const maxTop  = Math.max(0, parentHeight - this.timerContainer.offsetHeight);
+            const maxLeft = Math.max(0, parentWidth  - this.timerWrap.offsetWidth);
+            const maxTop  = Math.max(0, parentHeight - this.timerWrap.offsetHeight);
 
-            this.timerContainer.style.left = Math.min(Math.max(0, left), maxLeft) + 'px';
-            this.timerContainer.style.top  = Math.min(Math.max(0, top),  maxTop)  + 'px';
-
-            console.log(offsetX, offsetY, e.clientX, e.clientY)
+            this.timerWrap.style.left = Math.min(Math.max(0, left), maxLeft) + 'px';
+            this.timerWrap.style.top  = Math.min(Math.max(0, top),  maxTop)  + 'px';
 
             e.preventDefault();
         };
@@ -287,7 +282,7 @@ class PomodoroTimer{
 
             this.isDragging = true;
 
-            const rect = this.timerContainer.getBoundingClientRect();
+            const rect = this.timerWrap.getBoundingClientRect();
             offsetX = e.clientX - rect.left;
             offsetY = e.clientY - rect.top;
 

@@ -19,23 +19,66 @@ class MusicManager {
         this.barToggle = document.getElementById('music-bar-toggle');
         this.barIcon = this.barToggle?.querySelector('.material-symbols-outlined');
         this.timeText = document.getElementById('music-time');
-        this
+    
+        this._endedListenerAdded = false;
+        this._metaListenersAdded = false;
+
         this.init();
     }
 
     init() {
         if (this.playMusicBtn){
-            this.playMusicBtn.addEventListener('click', () => { this.playMusic(); });
+            this.playMusicBtn.addEventListener('click', async () => { 
+                await this.ensurePlaylistLoaded();
+                this.playIfPaused(); 
+            });
+        }
+
+        if (this.musicButton) {
+            this.musicButton.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await this.ensurePlaylistLoaded();
+                this.togglePlayPause();
+            });
+        }
+
+        if (this.barToggle) {
+            this.barToggle.addEventListener('click', async () => {
+                await this.ensurePlaylistLoaded();
+                this.togglePlayPause();
+            });
         }
 
         if (this.player) {
-            this.player.addEventListener('play', () => this.startSmoothing());
-            this.player.addEventListener('pause', () => this.stopSmoothing());
-            this.player.addEventListener('ended', () => this.stopSmoothing());
+            this.player.addEventListener('play', () => {
+                this.changeIcon(true);
+                this.startSmoothing();
+            });
+            this.player.addEventListener('pause', () => {
+                this.changeIcon(false);
+                this.stopSmoothing();
+                this.updatePlaybar();
+            });
+            this.player.addEventListener('ended', () => {
+                this.changeIcon(false);
+                this.stopSmoothing();
+                this.updatePlaybar();
+
+                if (Array.isArray(this.playlist) && this.playlist.length) {
+                    this.index = (this.index + 1) % this.playlist.length;
+                    this.playSong(this.index);
+                }
+            });
             
             if (this.playbarContainer) {
                 this.jumpTime();
                 this.dragTime();
+            }
+
+            if (!this._metaListenersAdded) {
+                this.player.addEventListener('loadedmetadata', () => this.updatePlaybar());
+                this.player.addEventListener('timeupdate', () => this.updatePlaybar());
+                this._metaListenersAdded = true;
             }
         }
 
@@ -46,7 +89,112 @@ class MusicManager {
             else if (!this.player.paused) {
                 this.startSmoothing();
             };
-        })
+        });
+
+        this.dragMusic();
+
+        if (this.musicText) {
+            const attr = this.musicText.textContent?.trim() || '';
+            this.musicText.setAttribute('data-text', attr);
+            this.musicText.textContent = '';
+        }
+    }
+
+    async ensurePlaylistLoaded() {
+        if (Array.isArray(this.playlist) && this.playlist.length) return;
+        try {
+            const res = await fetch('music/playlist.json', { cache: 'no-store' });
+            if (!res.ok) {
+                console.error('Failed to fetch playlist:', res.status);
+                return;
+            }
+            const body = await res.text();
+            this.playlist = JSON.parse(body);
+            if (!Array.isArray(this.playlist)) this.playlist = [];
+            if (!this._endedListenerAdded && this.player) {
+                this.player.addEventListener('ended', () => {
+                    if (!this.playlist.length) return;
+                    this.index = (this.index + 1) % this.playlist.length;
+                    this.playSong(this.index);
+                });
+                this._endedListenerAdded = true;
+            }
+        } catch (err) {
+            console.error('Failed to load playlist:', err);
+            this.playlist = [];
+        }
+    }
+
+    dragMusic() {
+        if (!this.musicWrap || !this.musicContainer) return;
+
+        const computed = getComputedStyle(this.musicWrap);
+        if (computed.position === 'static') {
+            this.musicWrap.style.position = 'absolute';
+            this.musicWrap.style.left = this.musicWrap.offsetLeft + 'px';
+            this.musicWrap.style.top = this.musicWrap.offsetTop + 'px'
+        }
+
+        this.musicContainer.style.touchAction = 'none';
+
+        let isDragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        const onMove = (e) => {
+            if (!isDragging) return;
+
+            const parent = this.musicContainer.offsetParent || document.documentElement;
+            const parentRect = parent.getBoundingClientRect();
+
+            const left = e.clientX - parentRect.left - offsetX;
+            const top = e.clientY - parentRect.top - offsetY;
+
+            const parentWidth  = parent === document.documentElement ? window.innerWidth  : parent.clientWidth;
+            const parentHeight = parent === document.documentElement ? window.innerHeight : parent.clientHeight;
+
+            const maxLeft = Math.max(0, parentWidth  - this.musicWrap.offsetWidth);
+            const maxTop  = Math.max(0, parentHeight - this.musicWrap.offsetHeight);
+
+            this.musicWrap.style.position = 'absolute';
+            this.musicWrap.style.left = Math.min(Math.max(0, left), maxLeft) + 'px';
+            this.musicWrap.style.top  = Math.min(Math.max(0, top),  maxTop)  + 'px';
+
+            e.preventDefault();
+        };
+
+        const onUp = (e) => {
+            isDragging = false;
+            
+            try { 
+                e.currentTarget?.releasePointerCapture?.(e.pointerId);
+            }
+            catch (err) {
+                console.error(err)
+            }
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+        };
+
+        this.musicContainer.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0) return;
+            if (e.target.closest('button, a, input, textarea, label')) return;
+
+            isDragging = true;
+
+            const rect = this.musicContainer.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+
+            try {
+                e.currentTarget.setPointerCapture(e.pointerId)
+            } catch (err) {
+                console.error(err);
+            }
+
+            document.addEventListener('pointermove', onMove, { passive: false });
+            document.addEventListener('pointerup', onUp, { passive: true });
+        });
     }
 
     jumpTime() {
@@ -85,10 +233,9 @@ class MusicManager {
                 const rect = this.playbarContainer.getBoundingClientRect();
                 const pos = e.clientX - rect.left;
                 const ratio = pos / rect.width;
-                const clamped = Math.max(0, Math.min(1, ratio));
             
                 if (this.player && isFinite(this.player.duration)) {
-                    this.player.currentTime  = ratio * this.player.duration;
+                    this.player.currentTime = ratio * this.player.duration;
                 }
 
                 if (this.playbar) this.playbar.style.transition = '';
@@ -110,40 +257,48 @@ class MusicManager {
         });
     }
 
-    async playMusic() {
-        try {
-            const res = await fetch('music/playlist.json');
-            if (!res.ok) {
-                console.error('Failed to fetch player:', res.status);
-                return;
+    playIfPaused() {
+        if (!this.player) return;
+        if (this.player.paused) {
+            if (!this.player.src) {
+                this.index = 0;
+                this.playSong(this.index);
+            } else {
+                this.player.play().catch(err => console.error(err));
             }
-            const body = await res.text();
-            try {
-                this.playlist = JSON.parse(body);
-            } catch(err) {
-                console.error('Invalid JSON format:', err);
-                return;
-            }
+        }
+    }
 
-            if (!this.player || !Array.isArray(this.playlist)) return;
-        
+    togglePlayPause() {
+        if (!this.player) return;
+        if (!this.player.src) {
             this.index = 0;
             this.playSong(this.index);
+            return;
+        }
+        if (this.player.paused) {
+            this.player.play().catch(err => console.error(err));
+        } else {
+            this.player.pause();
+        }
+    }
+    changeIcon(isPlaying) {
+        const playIcon = 'play_circle';
+        const stopIcon = 'square_circle';
+        if (this.musicIcon) {
+            this.musicIcon.textContent = isPlaying ? stopIcon : playIcon;
+            this.musicIcon.classList.toggle('filled', isPlaying);
+        }
 
-            if (this.playbar && !this._progressListenersAdded) {
-                this.player.addEventListener('loadedmetadata', () => this.updatePlaybar());
-                this.player.addEventListener('timeupdate', () => this.updatePlaybar());
-                this._progressListenersAdded = true;
-            }
-            this.player.addEventListener('ended', () => {
-                this.index = (this.index + 1) % this.playlist.length;
-                this.playSong(this.index);
-            });
+        if (this.barIcon) {
+            this.barIcon.textContent = isPlaying ? stopIcon : playIcon;
+            this.barIcon.classList.toggle('filled', isPlaying);
         }
-        
-        catch(err) {
-            console.error("Failed to load playlist:", err);
-        }
+    }
+
+    async playMusic() {
+        await this.ensurePlaylistLoaded();
+        this.playIfPaused();
     }
 
     startSmoothing() {
@@ -167,6 +322,7 @@ class MusicManager {
                 this.playbar.style.transform = 'scaleX(0)';
                 this.playbar.setAttribute('aria-valuenow', 0);
             }
+            if (this.timeText) this.timeText.textContent = '00:00 / 00:00'
             return;
         }
 
@@ -174,23 +330,41 @@ class MusicManager {
         const clamp = Math.max(0, Math.min(100, percent));
         this.playbar.style.transform = `scaleX(${clamp / 100})`;
         this.playbar.setAttribute('aria-valuenow', Math.round(clamp));
-        
-        const minutesCt = Math.round(Math.floor(this.player.currentTime / 60));
-        const secondsCt = Math.round(this.player.currentTime % 60);
 
-        const minutesDur = Math.round(Math.floor(this.player.duration / 60));
-        const secondsDur = Math.round(this.player.duration % 60);
-
-        // console.log(`${Math.floor(minutesCt / 10)}${minutesCt % 10}:${Math.floor(secondsCt / 10)}${secondsCt % 10} / ${Math.floor(minutesDur / 10)}${minutesDur % 10}:${Math.floor(secondsDur / 10)}${secondsDur % 10}`)
+        if (this.timeText) {
+            this.timeText.textContent = `${this.formatTime(this.player.currentTime)}/ ${this.formatTime(this.player.duration)}`
+        }
     }
+
     playSong(idx) {
         const song = this.playlist[idx];
         if (!song) return;
         this.player.src = song;
+        this.changeTitle(song);
         this.player.play().catch(err => {
             console.error(`Playback failed - Reason: ${err}`);
         });
         if (!this.isDragging) this.startSmoothing();
+    }
+
+    changeTitle(url) {
+        if (!this.musicText) return;
+        try {
+            const raw = decodeURIComponent(url.split('/').pop() || url);
+            const name = raw.replace(/\.(mp3)$/i, '');
+            this.musicText.setAttribute('data-text', name);
+            this.musicText.textContent = name;
+        } catch {
+            this.musicText.setAttribute('data-text', 'Now Playing');
+            this.musicText.textContent = 'Now Playing';
+        }
+    }
+
+    formatTime(sec) {
+        if (!isFinite(sec)) return '00:00';
+        const s = Math.floor(sec % 60);
+        const m = Math.floor(sec / 60);
+        return `${String(m).padStart(2,'0')}:${String(s).padStart(2, '0')}`;
     }
 }
 
